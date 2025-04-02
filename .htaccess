@@ -11,14 +11,18 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # 防止直接訪問 .env 文件
 RewriteRule ^\.env$ - [F,L]
 
-# 將所有請求重定向到 public 目錄
+# 將所有請求重定向到 public 目錄，但保持 URL 不變
 RewriteCond %{REQUEST_URI} !^/public/
 RewriteRule ^(.*)$ public/$1 [L]
 
+# 如果請求的是 public/index.php，重定向到根目錄
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
+RewriteRule ^ %1 [R=301,L]
+
 # 隱藏 .php 後綴
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([^\.]+)$ $1.php [L,QSA]
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php [L,QSA]
 
 # 預設首頁
 DirectoryIndex public/index.php
