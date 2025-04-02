@@ -1,0 +1,52 @@
+# 開啟重寫模組
+RewriteEngine On
+
+# 設定基礎路徑
+RewriteBase /
+
+# 強制 HTTPS（將所有 HTTP 請求轉到 HTTPS）
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 防止直接訪問 .env 文件
+RewriteRule ^\.env$ - [F,L]
+
+# 將所有請求重定向到 public 目錄
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L]
+
+# 隱藏 .php 後綴
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ $1.php [L,QSA]
+
+# 預設首頁
+DirectoryIndex public/index.php
+
+# 禁止直接訪問敏感文件
+<FilesMatch "\.(htaccess|htpasswd|env|ini|log|sh|sql|bak|zip|git|env.*)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# 自定義錯誤頁面
+ErrorDocument 403 /public/error_pages/403.html
+ErrorDocument 404 /public/error_pages/404.html
+ErrorDocument 500 /public/error_pages/500.html
+
+# 安全性標頭
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# PHP 設定
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>

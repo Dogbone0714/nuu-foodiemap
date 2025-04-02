@@ -1,0 +1,31 @@
+# 環境配置文件
+.env
+.env.*
+!.env.example
+
+# 編輯器和 IDE 文件
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# 系統文件
+.DS_Store
+Thumbs.db
+
+# 依賴目錄
+/vendor/
+/node_modules/
+
+# 日誌文件
+/storage/logs/*
+/storage/cache/*
+!storage/logs/.gitkeep
+!storage/cache/.gitkeep
+
+# 其他
+*.log
+*.cache
+*.bak
+*.swp
+*.swo 
