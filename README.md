@@ -82,7 +82,7 @@ npm run dev
 
 如有任何問題或建議，請透過以下方式聯絡我們：
 - Email：0714@hhk.one
-- GitHub Issues：[issues page]
+- GitHub Issues：https://github.com/hhk/nuu-foodiemap/issues
 
 ## 致謝
 
