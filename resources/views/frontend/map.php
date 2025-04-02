@@ -23,7 +23,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
@@ -31,7 +31,10 @@
             min-width: 250px;
             max-height: 80vh;
             overflow-y: auto;
-            transition: transform 0.3s ease;
+            transform: translateX(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
         .category-filter h3 {
             margin: 0 0 15px 0;
@@ -39,6 +42,23 @@
             font-size: 18px;
             border-bottom: 2px solid #4CAF50;
             padding-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .category-filter h3::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #4CAF50;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        .category-filter.active h3::after {
+            transform: scaleX(1);
         }
         .category-checkbox {
             margin: 10px 0;
@@ -46,10 +66,13 @@
             align-items: center;
             padding: 8px;
             border-radius: 5px;
-            transition: background-color 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+            opacity: 1;
         }
         .category-checkbox:hover {
             background-color: #f5f5f5;
+            transform: translateX(5px);
         }
         .category-checkbox input[type="checkbox"] {
             display: none;
@@ -79,6 +102,11 @@
             text-align: center;
             line-height: 18px;
             font-size: 12px;
+            transform: scale(1.1);
+        }
+        .category-checkbox input[type="checkbox"]:checked + label {
+            color: #4CAF50;
+            font-weight: 500;
         }
         .category-icon {
             margin-right: 8px;
@@ -171,11 +199,14 @@
             cursor: pointer;
             z-index: 1002;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .mobile-toggle i {
-            transition: transform 0.3s;
+        .mobile-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        .mobile-toggle.active i {
+        .mobile-toggle.active {
+            background: #45a049;
             transform: rotate(180deg);
         }
         .mobile-overlay {
@@ -187,9 +218,12 @@
             bottom: 0;
             background: rgba(0,0,0,0.5);
             z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         .mobile-overlay.active {
             display: block;
+            opacity: 1;
         }
 
         /* 移動端樣式 */
@@ -206,10 +240,12 @@
                 height: 100vh;
                 margin: 0;
                 border-radius: 0;
-                transition: right 0.3s ease;
+                transform: translateX(0);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: -2px 0 15px rgba(0,0,0,0.1);
             }
             .category-filter.active {
-                right: 0;
+                transform: translateX(-100%);
             }
             .mobile-overlay.active {
                 display: block;
@@ -226,11 +262,64 @@
             .leaflet-popup-tip {
                 display: none;
             }
+            .category-checkbox {
+                animation: slideIn 0.3s ease forwards;
+                opacity: 0;
+            }
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            .category-checkbox:nth-child(1) { animation-delay: 0.1s; }
+            .category-checkbox:nth-child(2) { animation-delay: 0.2s; }
+            .category-checkbox:nth-child(3) { animation-delay: 0.3s; }
+            .category-checkbox:nth-child(4) { animation-delay: 0.4s; }
+            .category-checkbox:nth-child(5) { animation-delay: 0.5s; }
+            .category-checkbox:nth-child(6) { animation-delay: 0.6s; }
+            .category-checkbox:nth-child(7) { animation-delay: 0.7s; }
+            .category-checkbox:nth-child(8) { animation-delay: 0.8s; }
+            .category-checkbox:nth-child(9) { animation-delay: 0.9s; }
+            .category-checkbox:nth-child(10) { animation-delay: 1s; }
+            .search-box input {
+                animation: fadeIn 0.3s ease forwards;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         }
 
         /* 防止移動端雙擊縮放 */
         * {
             touch-action: manipulation;
+        }
+
+        /* 添加滾動條樣式 */
+        .category-filter::-webkit-scrollbar {
+            width: 6px;
+        }
+        .category-filter::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .category-filter::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 3px;
+        }
+        .category-filter::-webkit-scrollbar-thumb:hover {
+            background: #45a049;
         }
     </style>
 </head>
@@ -281,6 +370,16 @@
             mobileToggle.classList.toggle('active');
             categoryFilter.classList.toggle('active');
             mobileOverlay.classList.toggle('active');
+            
+            // 重置動畫
+            if (categoryFilter.classList.contains('active')) {
+                const checkboxes = document.querySelectorAll('.category-checkbox');
+                checkboxes.forEach((checkbox, index) => {
+                    checkbox.style.animation = 'none';
+                    checkbox.offsetHeight; // 觸發重排
+                    checkbox.style.animation = `slideIn 0.3s ease forwards ${index * 0.1}s`;
+                });
+            }
         }
 
         mobileToggle.addEventListener('click', toggleMobileMenu);
@@ -310,9 +409,10 @@
             }
             
             document.querySelector('.no-results').style.display = 'none';
-            categories.forEach(category => {
+            categories.forEach((category, index) => {
                 const div = document.createElement('div');
                 div.className = 'category-checkbox';
+                div.style.animationDelay = `${index * 0.1}s`;
                 div.innerHTML = `
                     <input type="checkbox" id="category${category.id}" value="${category.id}">
                     <label for="category${category.id}">
@@ -326,8 +426,16 @@
                 document.getElementById(`category${category.id}`).addEventListener('change', function(e) {
                     if (e.target.checked) {
                         selectedCategories.add(category.id);
+                        e.target.closest('.category-checkbox').style.transform = 'translateX(5px)';
+                        setTimeout(() => {
+                            e.target.closest('.category-checkbox').style.transform = 'translateX(0)';
+                        }, 200);
                     } else {
                         selectedCategories.delete(category.id);
+                        e.target.closest('.category-checkbox').style.transform = 'translateX(-5px)';
+                        setTimeout(() => {
+                            e.target.closest('.category-checkbox').style.transform = 'translateX(0)';
+                        }, 200);
                     }
                     updateMarkers();
                 });
@@ -391,6 +499,28 @@
 
         // 防止移動端雙擊縮放
         map.doubleClickZoom.disable();
+
+        // 添加觸控滑動關閉功能
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        categoryFilter.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        categoryFilter.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const swipeDistance = touchEndX - touchStartX;
+
+            if (swipeDistance > swipeThreshold && categoryFilter.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+        }
     </script>
 </body>
 </html>
