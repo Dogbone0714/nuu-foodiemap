@@ -232,13 +232,15 @@
 
         /* 移動端樣式 */
         @media (max-width: 768px) {
-            .mobile-toggle {
-                display: block;
-            }
             .category-filter {
+                display: none; /* 默認隱藏清單 */
+            }
+
+            .category-filter.active {
+                display: block; /* 只在選單打開時顯示 */
                 position: fixed;
                 top: 0;
-                right: -100%;
+                right: 0;
                 width: 80%;
                 max-width: 300px;
                 height: 100vh;
@@ -248,63 +250,95 @@
                 will-change: transform;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 box-shadow: -2px 0 15px rgba(0,0,0,0.1);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+                z-index: 1000;
             }
-            .category-filter.active {
+
+            .category-filter.closing {
+                transform: translate3d(100%, 0, 0);
+            }
+
+            /* 優化移動端按鈕樣式 */
+            .mobile-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                cursor: pointer;
+                z-index: 1002;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
                 transform: translate3d(0, 0, 0);
+                will-change: transform;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
+
+            .mobile-toggle.active {
+                transform: rotate3d(0, 0, 1, 180deg);
+            }
+
+            .mobile-toggle.closing {
+                transform: rotate3d(0, 0, 1, 0deg);
+            }
+
+            /* 優化遮罩層樣式 */
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+                opacity: 0;
+                transform: translate3d(0, 0, 0);
+                will-change: opacity;
+                transition: opacity 0.3s ease;
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
+            }
+
             .mobile-overlay.active {
                 display: block;
+                opacity: 1;
             }
+
+            .mobile-overlay.closing {
+                opacity: 0;
+            }
+
+            /* 優化地圖容器樣式 */
+            #map {
+                height: 100vh;
+                width: 100%;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* 優化標記彈窗樣式 */
             .marker-popup {
                 max-width: 90vw;
             }
+
             .leaflet-popup-content-wrapper {
                 max-width: 90vw;
             }
+
             .leaflet-popup-content {
                 margin: 10px;
             }
+
             .leaflet-popup-tip {
                 display: none;
-            }
-            .category-checkbox {
-                opacity: 0;
-                transform: translate3d(20px, 0, 0);
-                will-change: transform, opacity;
-            }
-            @keyframes slideIn {
-                from {
-                    opacity: 0;
-                    transform: translate3d(20px, 0, 0);
-                }
-                to {
-                    opacity: 1;
-                    transform: translate3d(0, 0, 0);
-                }
-            }
-            .category-checkbox:nth-child(1) { animation-delay: 0.1s; }
-            .category-checkbox:nth-child(2) { animation-delay: 0.2s; }
-            .category-checkbox:nth-child(3) { animation-delay: 0.3s; }
-            .category-checkbox:nth-child(4) { animation-delay: 0.4s; }
-            .category-checkbox:nth-child(5) { animation-delay: 0.5s; }
-            .category-checkbox:nth-child(6) { animation-delay: 0.6s; }
-            .category-checkbox:nth-child(7) { animation-delay: 0.7s; }
-            .category-checkbox:nth-child(8) { animation-delay: 0.8s; }
-            .category-checkbox:nth-child(9) { animation-delay: 0.9s; }
-            .category-checkbox:nth-child(10) { animation-delay: 1s; }
-            .search-box input {
-                transform: translate3d(0, 0, 0);
-                will-change: transform;
-            }
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translate3d(0, -10px, 0);
-                }
-                to {
-                    opacity: 1;
-                    transform: translate3d(0, 0, 0);
-                }
             }
         }
 
@@ -446,6 +480,61 @@
         .custom-marker.loading {
             animation: pulse 1s infinite;
         }
+
+        .filter-options {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 5px;
+        }
+
+        .filter-group {
+            margin-bottom: 10px;
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+            background-color: white;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .filter-group select option {
+            padding: 8px;
+        }
+
+        /* 優化移動端篩選選項樣式 */
+        @media (max-width: 768px) {
+            .filter-options {
+                margin: 10px 0;
+                padding: 8px;
+            }
+
+            .filter-group select {
+                padding: 10px;
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -456,23 +545,212 @@
     <div class="mobile-overlay" id="mobileOverlay"></div>
     <div class="category-filter" id="categoryFilter">
         <div class="search-box">
-            <input type="text" id="categorySearch" placeholder="搜尋類別...">
+            <input type="text" id="placeSearch" placeholder="搜尋地點...">
             <i class="fas fa-search"></i>
+        </div>
+        <div class="filter-options">
+            <div class="filter-group">
+                <label>距離</label>
+                <select id="distanceFilter">
+                    <option value="">全部</option>
+                    <option value="1">1公里內</option>
+                    <option value="3">3公里內</option>
+                    <option value="5">5公里內</option>
+                    <option value="10">10公里內</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>評分</label>
+                <select id="ratingFilter">
+                    <option value="">全部</option>
+                    <option value="4">4星以上</option>
+                    <option value="3">3星以上</option>
+                    <option value="2">2星以上</option>
+                    <option value="1">1星以上</option>
+                </select>
+            </div>
         </div>
         <h3>景點類別</h3>
         <div id="categoryList">
             <!-- 類別選項將由 JavaScript 動態生成 -->
         </div>
-        <div class="no-results">沒有找到相關類別</div>
+        <div class="no-results">沒有找到相關地點</div>
     </div>
     <div class="loading">
         <i class="fas fa-spinner"></i>
     </div>
 
     <script>
+        // 安全防護代碼
+        (function() {
+            // 禁用右鍵選單
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // 禁用開發者工具快捷鍵
+            document.addEventListener('keydown', function(e) {
+                // 禁用 F12
+                if (e.keyCode === 123) {
+                    e.preventDefault();
+                    return false;
+                }
+                // 禁用 Ctrl+Shift+I
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+                    e.preventDefault();
+                    return false;
+                }
+                // 禁用 Ctrl+Shift+J
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+                    e.preventDefault();
+                    return false;
+                }
+                // 禁用 Ctrl+U
+                if (e.ctrlKey && e.keyCode === 85) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // 檢測開發者工具開啟
+            let devtools = function() {};
+            devtools.toString = function() {
+                window.location.href = '/';
+                return '';
+            };
+
+            // 定期檢查開發者工具
+            setInterval(function() {
+                console.log(devtools);
+                console.clear();
+            }, 1000);
+
+            // 混淆關鍵變量
+            const _0x4f2a = ['lat', 'lng', 'validateCoordinates', 'formatCoordinates', 'calculateDistance'];
+            const _0x1b3c = {
+                'lat': _0x4f2a[0],
+                'lng': _0x4f2a[1],
+                'validate': _0x4f2a[2],
+                'format': _0x4f2a[3],
+                'distance': _0x4f2a[4]
+            };
+
+            // 安全檢查函數
+            function securityCheck() {
+                // 檢查是否在 iframe 中
+                if (window.self !== window.top) {
+                    window.top.location = window.self.location;
+                }
+
+                // 檢查是否啟用了 JavaScript
+                if (typeof window === 'undefined') {
+                    window.location.href = '/';
+                }
+
+                // 檢查是否啟用了 cookies
+                if (!navigator.cookieEnabled) {
+                    window.location.href = '/';
+                }
+            }
+
+            // 定期執行安全檢查
+            setInterval(securityCheck, 5000);
+
+            // 添加 CSP 頭
+            const meta = document.createElement('meta');
+            meta.httpEquiv = 'Content-Security-Policy';
+            meta.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com;";
+            document.head.appendChild(meta);
+
+            // 禁用拖放
+            document.addEventListener('dragstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // 禁用選擇
+            document.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // 禁用複製
+            document.addEventListener('copy', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // 添加錯誤處理
+            window.onerror = function(msg, url, lineNo, columnNo, error) {
+                console.log('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+                return false;
+            };
+
+            // 添加警告處理
+            window.onwarn = function(msg, url, lineNo, columnNo, error) {
+                console.log('Warning: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+                return false;
+            };
+        })();
+
+        // 優化坐標處理工具類
+        class CoordinateUtils {
+            static validateCoordinates(lat, lng) {
+                return (
+                    typeof lat === 'number' &&
+                    typeof lng === 'number' &&
+                    lat >= -90 &&
+                    lat <= 90 &&
+                    lng >= -180 &&
+                    lng <= 180
+                );
+            }
+
+            static formatCoordinates(lat, lng) {
+                return {
+                    lat: Number(lat.toFixed(6)),
+                    lng: Number(lng.toFixed(6))
+                };
+            }
+
+            static calculateDistance(lat1, lng1, lat2, lng2) {
+                const R = 6371; // 地球半徑（公里）
+                const dLat = this.toRad(lat2 - lat1);
+                const dLng = this.toRad(lng2 - lng1);
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) * 
+                    Math.sin(dLng/2) * Math.sin(dLng/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+
+            static toRad(value) {
+                return value * Math.PI / 180;
+            }
+
+            static parseCoordinates(lat, lng) {
+                // 處理字符串格式的坐標
+                if (typeof lat === 'string') {
+                    lat = parseFloat(lat);
+                }
+                if (typeof lng === 'string') {
+                    lng = parseFloat(lng);
+                }
+                return { lat, lng };
+            }
+        }
+
+        // 優化地圖初始化
         var map = L.map('map', {
             zoomControl: false,
-            tap: true
+            tap: true,
+            maxBounds: [
+                [24.4458273, 120.78979], // 西南角
+                [24.6458273, 120.82979]  // 東北角
+            ],
+            maxBoundsViscosity: 1.0
         }).setView([24.5458273, 120.80979], 13);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -492,20 +770,38 @@
         const mobileOverlay = document.getElementById('mobileOverlay');
 
         function toggleMobileMenu() {
-            requestAnimationFrame(() => {
-                mobileToggle.classList.toggle('active');
-                categoryFilter.classList.toggle('active');
-                mobileOverlay.classList.toggle('active');
+            const isOpening = !categoryFilter.classList.contains('active');
+            
+            if (isOpening) {
+                // 打開選單
+                categoryFilter.style.display = 'block';
+                requestAnimationFrame(() => {
+                    categoryFilter.classList.add('active');
+                    mobileOverlay.classList.add('active');
+                    mobileToggle.classList.add('active');
+                });
                 
-                if (categoryFilter.classList.contains('active')) {
-                    const checkboxes = document.querySelectorAll('.category-checkbox');
-                    checkboxes.forEach((checkbox, index) => {
-                        checkbox.style.animation = 'none';
-                        checkbox.offsetHeight; // 觸發重排
-                        checkbox.style.animation = `slideIn 0.3s ease forwards ${index * 0.1}s`;
-                    });
-                }
-            });
+                // 重置動畫
+                const checkboxes = document.querySelectorAll('.category-checkbox');
+                checkboxes.forEach((checkbox, index) => {
+                    checkbox.style.animation = 'none';
+                    checkbox.offsetHeight; // 觸發重排
+                    checkbox.style.animation = `slideIn 0.3s ease forwards ${index * 0.1}s`;
+                });
+            } else {
+                // 關閉選單
+                categoryFilter.classList.add('closing');
+                mobileOverlay.classList.add('closing');
+                mobileToggle.classList.add('closing');
+                
+                // 動畫結束後移除類別和隱藏元素
+                setTimeout(() => {
+                    categoryFilter.classList.remove('active', 'closing');
+                    mobileOverlay.classList.remove('active', 'closing');
+                    mobileToggle.classList.remove('active', 'closing');
+                    categoryFilter.style.display = 'none';
+                }, 300);
+            }
         }
 
         mobileToggle.addEventListener('click', toggleMobileMenu);
@@ -554,27 +850,25 @@
             categoryList.appendChild(fragment);
         }
 
-        // 搜尋類別
+        // 添加篩選相關變量
+        let allPlaces = [];
         let searchTimeout;
-        document.getElementById('categorySearch').addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredCategories = allCategories.filter(category => 
-                    category.name.toLowerCase().includes(searchTerm)
-                );
-                renderCategories(filteredCategories);
-            }, 150);
-        });
+        let currentFilters = {
+            search: '',
+            distance: '',
+            rating: '',
+            categories: new Set()
+        };
 
-        // 獲取所有地點
+        // 優化獲取地點函數
         function fetchPlaces() {
             toggleLoading(true);
             return fetch('/api/places')
                 .then(response => response.json())
                 .then(data => {
                     toggleLoading(false);
-                    return data;
+                    allPlaces = data;
+                    return filterPlaces(data);
                 })
                 .catch(error => {
                     toggleLoading(false);
@@ -583,152 +877,140 @@
                 });
         }
 
-        // 優化圖片加載器
-        class ImageLoader {
-            constructor() {
-                this.imageCache = new Map();
-                this.observer = null;
-                this.initIntersectionObserver();
-            }
-
-            initIntersectionObserver() {
-                this.observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            this.loadImage(entry.target);
-                            this.observer.unobserve(entry.target);
-                        }
-                    });
-                }, {
-                    root: null,
-                    rootMargin: '50px',
-                    threshold: 0.1
-                });
-            }
-
-            preloadImage(url) {
-                if (this.imageCache.has(url)) {
-                    return Promise.resolve(this.imageCache.get(url));
+        // 添加篩選函數
+        function filterPlaces(places) {
+            return places.filter(place => {
+                // 搜尋文字篩選
+                if (currentFilters.search && 
+                    !place.name.toLowerCase().includes(currentFilters.search.toLowerCase()) &&
+                    !place.description.toLowerCase().includes(currentFilters.search.toLowerCase())) {
+                    return false;
                 }
 
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    const progressBar = this.createProgressBar(img);
-                    
-                    img.onload = () => {
-                        this.imageCache.set(url, img);
-                        progressBar.classList.add('complete');
-                        setTimeout(() => progressBar.remove(), 500);
-                        resolve(img);
-                    };
+                // 評分篩選
+                if (currentFilters.rating && place.rating < parseFloat(currentFilters.rating)) {
+                    return false;
+                }
 
-                    img.onerror = () => {
-                        progressBar.remove();
-                        reject();
-                    };
+                // 距離篩選
+                if (currentFilters.distance) {
+                    const distance = CoordinateUtils.calculateDistance(
+                        map.getCenter().lat,
+                        map.getCenter().lng,
+                        place.lat,
+                        place.lng
+                    );
+                    if (distance > parseFloat(currentFilters.distance)) {
+                        return false;
+                    }
+                }
 
-                    img.onprogress = (event) => {
-                        if (event.lengthComputable) {
-                            const progress = (event.loaded / event.total) * 100;
-                            progressBar.querySelector('.image-progress-bar').style.width = `${progress}%`;
-                        }
-                    };
+                // 類別篩選
+                if (currentFilters.categories.size > 0 && 
+                    !currentFilters.categories.has(place.category_id)) {
+                    return false;
+                }
 
-                    img.src = url;
-                });
-            }
-
-            createProgressBar(img) {
-                const container = document.createElement('div');
-                container.className = 'image-progress loading';
-                
-                const progressBar = document.createElement('div');
-                progressBar.className = 'image-progress-bar';
-                
-                container.appendChild(progressBar);
-                img.parentElement.appendChild(container);
-                
-                return container;
-            }
-
-            loadImage(element) {
-                const url = element.dataset.src;
-                if (!url) return;
-
-                element.classList.add('image-placeholder');
-                element.classList.add('loading');
-
-                this.preloadImage(url)
-                    .then(img => {
-                        element.src = url;
-                        element.classList.remove('image-placeholder', 'loading');
-                        element.classList.add('loaded');
-                    })
-                    .catch(() => {
-                        element.classList.remove('image-placeholder', 'loading');
-                        element.classList.add('image-error');
-                        element.innerHTML = '<i class="fas fa-image"></i> 圖片加載失敗';
-                    });
-            }
-
-            observe(element) {
-                this.observer.observe(element);
-            }
-        }
-
-        // 初始化圖片加載器
-        const imageLoader = new ImageLoader();
-
-        // 優化地圖標記的圖片加載
-        function createMarkerIcon(place) {
-            const iconUrl = place.image_url || '/images/default-marker.png';
-            return L.divIcon({
-                className: 'custom-marker',
-                html: `
-                    <div class="image-container">
-                        <img class="lazy-image" data-src="${iconUrl}" alt="${place.name}">
-                        <div class="image-progress loading">
-                            <div class="image-progress-bar"></div>
-                        </div>
-                    </div>
-                `,
-                iconSize: [32, 32],
-                iconAnchor: [16, 32]
+                return true;
             });
         }
 
-        // 更新地圖標記
+        // 添加篩選事件監聽
+        document.getElementById('placeSearch').addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentFilters.search = e.target.value;
+                updateMarkers();
+            }, 300);
+        });
+
+        document.getElementById('distanceFilter').addEventListener('change', function(e) {
+            currentFilters.distance = e.target.value;
+            updateMarkers();
+        });
+
+        document.getElementById('ratingFilter').addEventListener('change', function(e) {
+            currentFilters.rating = e.target.value;
+            updateMarkers();
+        });
+
+        // 優化類別選擇事件
+        document.getElementById('categoryList').addEventListener('change', function(e) {
+            if (e.target.type === 'checkbox') {
+                if (e.target.checked) {
+                    currentFilters.categories.add(e.target.value);
+                } else {
+                    currentFilters.categories.delete(e.target.value);
+                }
+                updateMarkers();
+            }
+        });
+
+        // 優化地圖移動事件
+        map.on('moveend', function() {
+            if (currentFilters.distance) {
+                updateMarkers();
+            }
+        });
+
+        // 優化更新標記函數
         function updateMarkers() {
             requestAnimationFrame(() => {
                 markers.forEach(marker => map.removeLayer(marker));
                 markers = [];
 
-                fetchPlaces().then(places => {
-                    places.forEach(place => {
-                        if (selectedCategories.size === 0 || selectedCategories.has(place.category_id)) {
-                            const marker = L.marker([place.lat, place.lng], {
-                                icon: createMarkerIcon(place)
-                            })
-                            .addTo(map)
-                            .bindPopup(`
-                                <div class="marker-popup">
-                                    <h3>${place.name}</h3>
-                                    <p>${place.description}</p>
-                                    <span class="category-tag">
-                                        <i class="fas fa-tag"></i> ${place.category_name}
-                                    </span>
-                                </div>
-                            `);
+                const filteredPlaces = filterPlaces(allPlaces);
+                
+                if (filteredPlaces.length === 0) {
+                    document.querySelector('.no-results').style.display = 'block';
+                } else {
+                    document.querySelector('.no-results').style.display = 'none';
+                }
 
-                            // 觀察標記圖標的圖片加載
-                            const markerImage = marker.getElement().querySelector('img');
-                            if (markerImage) {
-                                imageLoader.observe(markerImage);
-                            }
+                filteredPlaces.forEach(place => {
+                    // 解析並驗證坐標
+                    const coords = CoordinateUtils.parseCoordinates(place.lat, place.lng);
+                    if (!CoordinateUtils.validateCoordinates(coords.lat, coords.lng)) {
+                        console.error('Invalid coordinates for place:', place);
+                        return;
+                    }
 
-                            markers.push(marker);
+                    // 格式化坐標
+                    const formattedCoords = CoordinateUtils.formatCoordinates(coords.lat, coords.lng);
+
+                    if (selectedCategories.size === 0 || selectedCategories.has(place.category_id)) {
+                        const markerIcon = createMarkerIcon(place);
+                        if (!markerIcon) return;
+
+                        const marker = L.marker([formattedCoords.lat, formattedCoords.lng], {
+                            icon: markerIcon
+                        })
+                        .addTo(map)
+                        .bindPopup(`
+                            <div class="marker-popup">
+                                <h3>${place.name}</h3>
+                                <p>${place.description}</p>
+                                <span class="category-tag">
+                                    <i class="fas fa-tag"></i> ${place.category_name}
+                                </span>
+                            </div>
+                        `);
+
+                        // 添加點擊事件
+                        marker.on('click', function(e) {
+                            // 使用原始坐標進行跳轉
+                            map.setView([coords.lat, coords.lng], 15);
+                            marker.openPopup();
+                        });
+
+                        // 觀察標記圖標的圖片加載
+                        const markerImage = marker.getElement().querySelector('img');
+                        if (markerImage) {
+                            imageLoader.observe(markerImage);
                         }
-                    });
+
+                        markers.push(marker);
+                    }
                 });
             });
         }
@@ -736,38 +1018,45 @@
         // 初始載入所有標記
         updateMarkers();
 
+        // 優化地圖點擊事件
+        map.on('click', function(e) {
+            const coords = CoordinateUtils.formatCoordinates(e.latlng.lat, e.latlng.lng);
+            console.log('Clicked coordinates:', coords);
+        });
+
+        // 優化地圖移動事件
+        map.on('moveend', function() {
+            const center = map.getCenter();
+            const coords = CoordinateUtils.formatCoordinates(center.lat, center.lng);
+            console.log('Map center:', coords);
+        });
+
         // 防止移動端雙擊縮放
         map.doubleClickZoom.disable();
 
-        // 添加觸控滑動關閉功能
-        let touchStartX = 0;
-        let touchEndX = 0;
-        let isSwiping = false;
+        // 添加坐標錯誤處理
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('coordinates') || e.message.includes('latlng')) {
+                console.error('Coordinate error:', e);
+            }
+        });
 
-        categoryFilter.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-            isSwiping = true;
-        }, { passive: true });
-
-        categoryFilter.addEventListener('touchmove', e => {
-            if (!isSwiping) return;
-            touchEndX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        categoryFilter.addEventListener('touchend', e => {
-            if (!isSwiping) return;
+        // 防止選單內容滾動時觸發滑動關閉
+        categoryFilter.addEventListener('scroll', () => {
             isSwiping = false;
-            handleSwipe();
         }, { passive: true });
 
-        function handleSwipe() {
-            const swipeThreshold = 50;
-            const swipeDistance = touchEndX - touchStartX;
-
-            if (swipeDistance > swipeThreshold && categoryFilter.classList.contains('active')) {
+        // 點擊遮罩層關閉選單
+        mobileOverlay.addEventListener('click', () => {
+            if (categoryFilter.classList.contains('active')) {
                 toggleMobileMenu();
             }
-        }
+        });
+
+        // 防止選單內容點擊事件冒泡
+        categoryFilter.addEventListener('click', e => {
+            e.stopPropagation();
+        });
 
         // 預加載關鍵圖片
         function preloadCriticalImages() {
