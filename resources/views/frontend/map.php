@@ -31,8 +31,9 @@
             min-width: 250px;
             max-height: 80vh;
             overflow-y: auto;
-            transform: translateX(0);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
@@ -66,13 +67,14 @@
             align-items: center;
             padding: 8px;
             border-radius: 5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(0);
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 1;
         }
         .category-checkbox:hover {
             background-color: #f5f5f5;
-            transform: translateX(5px);
+            transform: translate3d(5px, 0, 0);
         }
         .category-checkbox input[type="checkbox"] {
             display: none;
@@ -102,7 +104,7 @@
             text-align: center;
             line-height: 18px;
             font-size: 12px;
-            transform: scale(1.1);
+            transform: scale3d(1.1, 1.1, 1);
         }
         .category-checkbox input[type="checkbox"]:checked + label {
             color: #4CAF50;
@@ -199,15 +201,15 @@
             cursor: pointer;
             z-index: 1002;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .mobile-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: scale3d(1.1, 1.1, 1);
         }
         .mobile-toggle.active {
-            background: #45a049;
-            transform: rotate(180deg);
+            transform: rotate3d(0, 0, 1, 180deg);
         }
         .mobile-overlay {
             display: none;
@@ -219,6 +221,8 @@
             background: rgba(0,0,0,0.5);
             z-index: 999;
             opacity: 0;
+            transform: translate3d(0, 0, 0);
+            will-change: opacity;
             transition: opacity 0.3s ease;
         }
         .mobile-overlay.active {
@@ -240,12 +244,13 @@
                 height: 100vh;
                 margin: 0;
                 border-radius: 0;
-                transform: translateX(0);
+                transform: translate3d(100%, 0, 0);
+                will-change: transform;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 box-shadow: -2px 0 15px rgba(0,0,0,0.1);
             }
             .category-filter.active {
-                transform: translateX(-100%);
+                transform: translate3d(0, 0, 0);
             }
             .mobile-overlay.active {
                 display: block;
@@ -263,17 +268,18 @@
                 display: none;
             }
             .category-checkbox {
-                animation: slideIn 0.3s ease forwards;
                 opacity: 0;
+                transform: translate3d(20px, 0, 0);
+                will-change: transform, opacity;
             }
             @keyframes slideIn {
                 from {
                     opacity: 0;
-                    transform: translateX(20px);
+                    transform: translate3d(20px, 0, 0);
                 }
                 to {
                     opacity: 1;
-                    transform: translateX(0);
+                    transform: translate3d(0, 0, 0);
                 }
             }
             .category-checkbox:nth-child(1) { animation-delay: 0.1s; }
@@ -287,16 +293,17 @@
             .category-checkbox:nth-child(9) { animation-delay: 0.9s; }
             .category-checkbox:nth-child(10) { animation-delay: 1s; }
             .search-box input {
-                animation: fadeIn 0.3s ease forwards;
+                transform: translate3d(0, 0, 0);
+                will-change: transform;
             }
             @keyframes fadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(-10px);
+                    transform: translate3d(0, -10px, 0);
                 }
                 to {
                     opacity: 1;
-                    transform: translateY(0);
+                    transform: translate3d(0, 0, 0);
                 }
             }
         }
@@ -320,6 +327,58 @@
         }
         .category-filter::-webkit-scrollbar-thumb:hover {
             background: #45a049;
+        }
+
+        /* 優化滾動性能 */
+        .category-filter {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        /* 圖片加載相關樣式 */
+        .lazy-image {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .lazy-image.loaded {
+            opacity: 1;
+        }
+
+        .image-placeholder {
+            background: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .image-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f8f8;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .image-error i {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -367,19 +426,20 @@
         const mobileOverlay = document.getElementById('mobileOverlay');
 
         function toggleMobileMenu() {
-            mobileToggle.classList.toggle('active');
-            categoryFilter.classList.toggle('active');
-            mobileOverlay.classList.toggle('active');
-            
-            // 重置動畫
-            if (categoryFilter.classList.contains('active')) {
-                const checkboxes = document.querySelectorAll('.category-checkbox');
-                checkboxes.forEach((checkbox, index) => {
-                    checkbox.style.animation = 'none';
-                    checkbox.offsetHeight; // 觸發重排
-                    checkbox.style.animation = `slideIn 0.3s ease forwards ${index * 0.1}s`;
-                });
-            }
+            requestAnimationFrame(() => {
+                mobileToggle.classList.toggle('active');
+                categoryFilter.classList.toggle('active');
+                mobileOverlay.classList.toggle('active');
+                
+                if (categoryFilter.classList.contains('active')) {
+                    const checkboxes = document.querySelectorAll('.category-checkbox');
+                    checkboxes.forEach((checkbox, index) => {
+                        checkbox.style.animation = 'none';
+                        checkbox.offsetHeight; // 觸發重排
+                        checkbox.style.animation = `slideIn 0.3s ease forwards ${index * 0.1}s`;
+                    });
+                }
+            });
         }
 
         mobileToggle.addEventListener('click', toggleMobileMenu);
@@ -401,7 +461,7 @@
         // 渲染類別列表
         function renderCategories(categories) {
             const categoryList = document.getElementById('categoryList');
-            categoryList.innerHTML = '';
+            const fragment = document.createDocumentFragment();
             
             if (categories.length === 0) {
                 document.querySelector('.no-results').style.display = 'block';
@@ -409,6 +469,7 @@
             }
             
             document.querySelector('.no-results').style.display = 'none';
+            
             categories.forEach((category, index) => {
                 const div = document.createElement('div');
                 div.className = 'category-checkbox';
@@ -420,35 +481,24 @@
                         ${category.name}
                     </label>
                 `;
-                categoryList.appendChild(div);
-
-                // 添加事件監聽器
-                document.getElementById(`category${category.id}`).addEventListener('change', function(e) {
-                    if (e.target.checked) {
-                        selectedCategories.add(category.id);
-                        e.target.closest('.category-checkbox').style.transform = 'translateX(5px)';
-                        setTimeout(() => {
-                            e.target.closest('.category-checkbox').style.transform = 'translateX(0)';
-                        }, 200);
-                    } else {
-                        selectedCategories.delete(category.id);
-                        e.target.closest('.category-checkbox').style.transform = 'translateX(-5px)';
-                        setTimeout(() => {
-                            e.target.closest('.category-checkbox').style.transform = 'translateX(0)';
-                        }, 200);
-                    }
-                    updateMarkers();
-                });
+                fragment.appendChild(div);
             });
+            
+            categoryList.innerHTML = '';
+            categoryList.appendChild(fragment);
         }
 
         // 搜尋類別
+        let searchTimeout;
         document.getElementById('categorySearch').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredCategories = allCategories.filter(category => 
-                category.name.toLowerCase().includes(searchTerm)
-            );
-            renderCategories(filteredCategories);
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredCategories = allCategories.filter(category => 
+                    category.name.toLowerCase().includes(searchTerm)
+                );
+                renderCategories(filteredCategories);
+            }, 150);
         });
 
         // 獲取所有地點
@@ -467,17 +517,95 @@
                 });
         }
 
+        // 圖片加載優化
+        class ImageLoader {
+            constructor() {
+                this.imageCache = new Map();
+                this.observer = null;
+                this.initIntersectionObserver();
+            }
+
+            initIntersectionObserver() {
+                this.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            this.loadImage(entry.target);
+                            this.observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '50px',
+                    threshold: 0.1
+                });
+            }
+
+            preloadImage(url) {
+                if (this.imageCache.has(url)) {
+                    return Promise.resolve(this.imageCache.get(url));
+                }
+
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.imageCache.set(url, img);
+                        resolve(img);
+                    };
+                    img.onerror = reject;
+                    img.src = url;
+                });
+            }
+
+            loadImage(element) {
+                const url = element.dataset.src;
+                if (!url) return;
+
+                element.classList.add('image-placeholder');
+
+                this.preloadImage(url)
+                    .then(img => {
+                        element.src = url;
+                        element.classList.remove('image-placeholder');
+                        element.classList.add('loaded');
+                    })
+                    .catch(() => {
+                        element.classList.remove('image-placeholder');
+                        element.classList.add('image-error');
+                        element.innerHTML = '<i class="fas fa-image"></i> 圖片加載失敗';
+                    });
+            }
+
+            observe(element) {
+                this.observer.observe(element);
+            }
+        }
+
+        // 初始化圖片加載器
+        const imageLoader = new ImageLoader();
+
+        // 優化地圖標記的圖片加載
+        function createMarkerIcon(place) {
+            const iconUrl = place.image_url || '/images/default-marker.png';
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<img class="lazy-image" data-src="${iconUrl}" alt="${place.name}">`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 32]
+            });
+        }
+
         // 更新地圖標記
         function updateMarkers() {
-            // 清除所有現有標記
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
+            requestAnimationFrame(() => {
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
 
-            fetchPlaces().then(places => {
-                places.forEach(place => {
-                    // 如果沒有選擇任何類別，或地點的類別在選擇的類別中
-                    if (selectedCategories.size === 0 || selectedCategories.has(place.category_id)) {
-                        const marker = L.marker([place.lat, place.lng])
+                fetchPlaces().then(places => {
+                    places.forEach(place => {
+                        if (selectedCategories.size === 0 || selectedCategories.has(place.category_id)) {
+                            const marker = L.marker([place.lat, place.lng], {
+                                icon: createMarkerIcon(place)
+                            })
                             .addTo(map)
                             .bindPopup(`
                                 <div class="marker-popup">
@@ -488,8 +616,16 @@
                                     </span>
                                 </div>
                             `);
-                        markers.push(marker);
-                    }
+
+                            // 觀察標記圖標的圖片加載
+                            const markerImage = marker.getElement().querySelector('img');
+                            if (markerImage) {
+                                imageLoader.observe(markerImage);
+                            }
+
+                            markers.push(marker);
+                        }
+                    });
                 });
             });
         }
@@ -503,15 +639,23 @@
         // 添加觸控滑動關閉功能
         let touchStartX = 0;
         let touchEndX = 0;
+        let isSwiping = false;
 
         categoryFilter.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
-        });
+            isSwiping = true;
+        }, { passive: true });
+
+        categoryFilter.addEventListener('touchmove', e => {
+            if (!isSwiping) return;
+            touchEndX = e.changedTouches[0].screenX;
+        }, { passive: true });
 
         categoryFilter.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
+            if (!isSwiping) return;
+            isSwiping = false;
             handleSwipe();
-        });
+        }, { passive: true });
 
         function handleSwipe() {
             const swipeThreshold = 50;
@@ -521,6 +665,30 @@
                 toggleMobileMenu();
             }
         }
+
+        // 預加載關鍵圖片
+        function preloadCriticalImages() {
+            const criticalImages = [
+                '/images/default-marker.png',
+                '/images/logo.png'
+            ];
+
+            criticalImages.forEach(url => {
+                imageLoader.preloadImage(url);
+            });
+        }
+
+        // 頁面加載完成後預加載關鍵圖片
+        document.addEventListener('DOMContentLoaded', preloadCriticalImages);
+
+        // 添加圖片加載錯誤處理
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG') {
+                e.target.classList.remove('image-placeholder');
+                e.target.classList.add('image-error');
+                e.target.innerHTML = '<i class="fas fa-image"></i> 圖片加載失敗';
+            }
+        }, true);
     </script>
 </body>
 </html>
