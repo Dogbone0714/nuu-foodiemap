@@ -380,6 +380,72 @@
         .image-error i {
             margin-right: 5px;
         }
+
+        /* 圖片加載進度條樣式 */
+        .image-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.3s ease;
+        }
+
+        .image-progress.loading {
+            opacity: 1;
+        }
+
+        .image-progress.complete {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 優化標記圖標樣式 */
+        .custom-marker {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 添加加載動畫 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .custom-marker.loading {
+            animation: pulse 1s infinite;
+        }
     </style>
 </head>
 <body>
@@ -517,7 +583,7 @@
                 });
         }
 
-        // 圖片加載優化
+        // 優化圖片加載器
         class ImageLoader {
             constructor() {
                 this.imageCache = new Map();
@@ -547,13 +613,42 @@
 
                 return new Promise((resolve, reject) => {
                     const img = new Image();
+                    const progressBar = this.createProgressBar(img);
+                    
                     img.onload = () => {
                         this.imageCache.set(url, img);
+                        progressBar.classList.add('complete');
+                        setTimeout(() => progressBar.remove(), 500);
                         resolve(img);
                     };
-                    img.onerror = reject;
+
+                    img.onerror = () => {
+                        progressBar.remove();
+                        reject();
+                    };
+
+                    img.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const progress = (event.loaded / event.total) * 100;
+                            progressBar.querySelector('.image-progress-bar').style.width = `${progress}%`;
+                        }
+                    };
+
                     img.src = url;
                 });
+            }
+
+            createProgressBar(img) {
+                const container = document.createElement('div');
+                container.className = 'image-progress loading';
+                
+                const progressBar = document.createElement('div');
+                progressBar.className = 'image-progress-bar';
+                
+                container.appendChild(progressBar);
+                img.parentElement.appendChild(container);
+                
+                return container;
             }
 
             loadImage(element) {
@@ -561,15 +656,16 @@
                 if (!url) return;
 
                 element.classList.add('image-placeholder');
+                element.classList.add('loading');
 
                 this.preloadImage(url)
                     .then(img => {
                         element.src = url;
-                        element.classList.remove('image-placeholder');
+                        element.classList.remove('image-placeholder', 'loading');
                         element.classList.add('loaded');
                     })
                     .catch(() => {
-                        element.classList.remove('image-placeholder');
+                        element.classList.remove('image-placeholder', 'loading');
                         element.classList.add('image-error');
                         element.innerHTML = '<i class="fas fa-image"></i> 圖片加載失敗';
                     });
@@ -588,7 +684,14 @@
             const iconUrl = place.image_url || '/images/default-marker.png';
             return L.divIcon({
                 className: 'custom-marker',
-                html: `<img class="lazy-image" data-src="${iconUrl}" alt="${place.name}">`,
+                html: `
+                    <div class="image-container">
+                        <img class="lazy-image" data-src="${iconUrl}" alt="${place.name}">
+                        <div class="image-progress loading">
+                            <div class="image-progress-bar"></div>
+                        </div>
+                    </div>
+                `,
                 iconSize: [32, 32],
                 iconAnchor: [16, 32]
             });
